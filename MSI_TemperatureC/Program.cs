@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -65,12 +66,20 @@ namespace MSI_TemperatureC
                         if (colorConfig == null)
                         {
                             //There's no config for that temperature
-                            colorSDK.GetDeviceInfo();
+                            var item = colorSDK.GetDeviceInfo();
+                            Console.WriteLine($"Device Type: {string.Join(", ", item.DeviceType)}");
+                            Console.WriteLine($"Device Name: {colorSDK.GetDeviceName(item.DeviceType[0])}");
+                            Console.WriteLine($"Led Count: {string.Join(", ", item.LedCount)}");
+                            
                         }
                         else
                         {
                             var color = colorConfig.GetColor();
-                            colorSDK.GetDeviceInfo();
+                            Console.WriteLine($"Color: {color}");
+                            var item = colorSDK.GetDeviceInfo();
+                            Console.WriteLine($"Device Type: {string.Join(", ", item.DeviceType)}");
+                            Console.WriteLine($"Led Count: {string.Join(", ", item.LedCount)}");
+                            var test = colorSDK.SetLedColor("MSI_MB", 0, Color.Cyan);
                         }
                     }
                 }

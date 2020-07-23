@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace MSI_TemperatureC
@@ -69,7 +70,7 @@ namespace MSI_TemperatureC
 
         static MSIColorSDK()
         {
-            MLAPI_Initialize();
+            var item = MLAPI_Initialize();
         }
 
         #region Dll Function
@@ -83,7 +84,7 @@ namespace MSI_TemperatureC
         private static extern int MLAPI_GetDeviceName(
            [In, MarshalAs(UnmanagedType.BStr)] string type,
            [Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] devName
-       );
+        );
 
         [DllImport(DllPath, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern int MLAPI_GetDeviceNameEx(
@@ -220,10 +221,28 @@ namespace MSI_TemperatureC
         );
         #endregion
 
-        public int GetDeviceInfo()
+        public (string[] DeviceType, string[] LedCount) GetDeviceInfo()
         {
-            return MLAPI_GetDeviceInfo(out string[] deviceType, out string[] ledCount);
+            MLAPI_GetDeviceInfo(out string[] deviceType, out string[] ledCount);
+            return (deviceType, ledCount);
         }
-
+        public string[] GetDeviceName(string type)
+        {
+            MLAPI_GetDeviceName(type, out string[] deviceName);
+            return deviceName;
+        }
+        public int SetLedColor(string type, uint index, Color color)
+        {
+            MLAPI_GetLedName(type, out string[] names);
+            MLAPI_GetLedStyle(type, index, out string style);
+            MLAPI_GetLedColor(type, index, out uint r, out uint g, out uint b);
+            if (Color.FromArgb(color.A, (int)r, (int)g, (int)b).ToArgb() != color.ToArgb())
+            {
+                return MLAPI_SetLedColor(type, index, color.R, color.G, color.B);
+            }
+            return 0;
+            //var test = MLAPI_SetLedColorSync(type, index, "", color.R, color.G, color.B, 1);
+            //return MLAPI_SetLedColorSync(type, index, "", color.R, color.G, color.B, 1);
+        }
     }
 }
