@@ -1,3 +1,5 @@
 /.vs
 /MSI_TemperatureC/obj
 /MSI_TemperatureC/bin
+/packages
+/MSI_TemperatureC/MSI_TemperatureC.csproj.user
