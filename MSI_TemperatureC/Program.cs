@@ -23,7 +23,9 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using OpenHardwareMonitor.Hardware;
 
 namespace MSI_TemperatureC
@@ -32,22 +34,47 @@ namespace MSI_TemperatureC
     {
         public static async Task Main(string[] args)
         {
-            var computer = new Computer()
+            Computer computer = new Computer();
+            var colorSDK = new MSIColorSDK();
+            if (Config.Instance.HardwareType.ToLower().Equals("gpu"))
             {
-                CPUEnabled = true,
-                GPUEnabled = true,
-            };
-            computer.Open();
-            foreach (var hardware in computer.Hardware)
-            {
-                hardware.Update(); //use hardware.Name to get CPU model
-                Console.WriteLine(hardware.Name);
-                foreach (var sensor in hardware.Sensors)
-                {
-                    if (sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue)
-                        Console.WriteLine($"{sensor.Name}: {sensor.Value}");
-                }
+                computer.GPUEnabled = true;
             }
+            else
+            {
+                computer.CPUEnabled = true;
+            }
+            computer.Open();
+
+
+            var timer = new Timer
+            {
+                AutoReset = true,
+                Enabled = true,
+                Interval = Config.Instance.DelayBetweenCheck,
+            };
+            timer.Elapsed += delegate(object sender, ElapsedEventArgs e)
+            {
+                foreach (var hardware in computer.Hardware)
+                {
+                    hardware.Update();
+                    var tempAvg = hardware.Sensors.Where(x => x.SensorType == SensorType.Temperature && x.Value.HasValue).Select(x => x.Value).Average();
+                    if (tempAvg.HasValue)
+                    {
+                        var colorConfig = Config.Instance.TemperatureConfigs.FirstOrDefault(x => x.Temperature >= tempAvg);
+                        if (colorConfig == null)
+                        {
+                            //There's no config for that temperature
+                            colorSDK.GetDeviceInfo();
+                        }
+                        else
+                        {
+                            var color = colorConfig.GetColor();
+                            colorSDK.GetDeviceInfo();
+                        }
+                    }
+                }
+            };
             await Task.Delay(-1);
         }
     }
