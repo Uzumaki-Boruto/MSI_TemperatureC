@@ -35,8 +35,15 @@ namespace MSI_TemperatureC
     {
         public static async Task Main(string[] args)
         {
+            ChangeLedByTemp();
+            await Task.Delay(-1);
+        }
+
+        private static void ChangeLedByTemp()
+        {
             Computer computer = new Computer();
             var colorSDK = new MSIColorSDK();
+            var deviceCollection = colorSDK.GetDeviceInfo().ToList();
             if (Config.Instance.HardwareType.ToLower().Equals("gpu"))
             {
                 computer.GPUEnabled = true;
@@ -47,14 +54,13 @@ namespace MSI_TemperatureC
             }
             computer.Open();
 
-
             var timer = new Timer
             {
                 AutoReset = true,
                 Enabled = true,
                 Interval = Config.Instance.DelayBetweenCheck,
             };
-            timer.Elapsed += delegate(object sender, ElapsedEventArgs e)
+            timer.Elapsed += delegate (object sender, ElapsedEventArgs e)
             {
                 foreach (var hardware in computer.Hardware)
                 {
@@ -63,28 +69,20 @@ namespace MSI_TemperatureC
                     if (tempAvg.HasValue)
                     {
                         var colorConfig = Config.Instance.TemperatureConfigs.FirstOrDefault(x => x.Temperature >= tempAvg);
-                        if (colorConfig == null)
-                        {
-                            //There's no config for that temperature
-                            var item = colorSDK.GetDeviceInfo();
-                            Console.WriteLine($"Device Type: {string.Join(", ", item.DeviceType)}");
-                            Console.WriteLine($"Device Name: {colorSDK.GetDeviceName(item.DeviceType[0])}");
-                            Console.WriteLine($"Led Count: {string.Join(", ", item.LedCount)}");
-                            
-                        }
-                        else
+                        if (colorConfig != null)
                         {
                             var color = colorConfig.GetColor();
-                            Console.WriteLine($"Color: {color}");
-                            var item = colorSDK.GetDeviceInfo();
-                            Console.WriteLine($"Device Type: {string.Join(", ", item.DeviceType)}");
-                            Console.WriteLine($"Led Count: {string.Join(", ", item.LedCount)}");
-                            var test = colorSDK.SetLedColor("MSI_MB", 0, Color.Cyan);
+                            deviceCollection.ForEach(x =>
+                            {
+                                for (uint i = 0; i < x.LedCount; i++)
+                                {
+                                    colorSDK.SetLedColor(x.Type, i, color);
+                                }
+                            });
                         }
                     }
                 }
             };
-            await Task.Delay(-1);
         }
     }
 }
