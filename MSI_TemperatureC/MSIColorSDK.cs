@@ -74,6 +74,8 @@ namespace MSI_TemperatureC
         static MSIColorSDK()
         {
             var item = MLAPI_Initialize();
+            MLAPI_GetErrorMessage(item, out string description);
+            Console.WriteLine(description);
         }
 
         #region Dll Function
@@ -227,6 +229,8 @@ namespace MSI_TemperatureC
         public IEnumerable<DeviceInfo> GetDeviceInfo()
         {
             MLAPI_GetDeviceInfo(out string[] deviceType, out string[] ledCounts);
+            if (deviceType == null || ledCounts == null)
+                return Enumerable.Empty<DeviceInfo>();
             return deviceType.Zip(ledCounts, (device, ledCount) => new DeviceInfo(device, int.Parse(ledCount)));
         }
         public string[] GetDeviceName(string type)
@@ -246,10 +250,17 @@ namespace MSI_TemperatureC
         }
         public void SetLedColor(string type, uint index, Color color)
         {
+            MLAPI_GetLedStyle(type, index, out string style);
+            if (style != "Steady")
+            {
+                MLAPI_SetLedStyle(type, index, "Steady");
+            }  
             MLAPI_GetLedColor(type, index, out uint r, out uint g, out uint b);
             if (Color.FromArgb((int)r, (int)g, (int)b).ToArgb() != color.ToArgb())
             {
-                MLAPI_SetLedColor(type, index, color.R, color.G, color.B);
+                var setLedresponse = MLAPI_SetLedColor(type, index, color.R, color.G, color.B);
+                MLAPI_GetErrorMessage(setLedresponse, out string description);
+                Console.WriteLine(description);
             }
         }
     }

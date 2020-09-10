@@ -35,7 +35,7 @@ namespace MSI_TemperatureC
     {
         public static async Task Main(string[] args)
         {
-            ChangeLedByTemp();
+            ChangeLedByTemp();        
             await Task.Delay(-1);
         }
 

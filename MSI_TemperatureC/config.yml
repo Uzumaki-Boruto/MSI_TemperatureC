@@ -4,7 +4,7 @@
 HardwareType: CPU
 
 # EN: Delay between per checking time (in milisecond). Too low will make your CPU work more. Recomend value: 500 ~ 2500
-# VI: Khoảng thời gian giữa mỗi lần check nhiệt độ (đơn vị mili giây). Quá thấp sẽ khiến của bạn hoạt động nhiều hơn. Giá trị khuyến nghị: 2500 ~ 5000
+# VI: Khoảng thời gian giữa mỗi lần check nhiệt độ (đơn vị mili giây). Quá thấp sẽ khiến CPU của bạn hoạt động nhiều hơn. Giá trị khuyến nghị: 2500 ~ 5000
 DelayBetweenCheck: 2500
 
 # EN: You can add more temperature miles by adding the following template in TemperatureConfigs section.
@@ -12,9 +12,15 @@ DelayBetweenCheck: 2500
 # -Temperature : 50
 # Color: 828282
 TemperatureConfigs:
+- Temperature: 30
+  Color: 0000ff
 - Temperature: 40
-  Color: 0044ff
-- Temperature: 65
-  Color: 00ff00
+  Color: 008cff
+- Temperature: 50
+  Color: 00ff66
+- Temperature: 60
+  Color: ffdd00
+- Temperature: 70
+  Color: ff7b00
 - Temperature: 80
-  Color: ff3c00
+  Color: ff4034
